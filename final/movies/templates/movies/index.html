@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class='latest-preview-section'>
+  <div class='container'>
+
+    <div class='row'>
+      <div class='col-lg-12'>
+        <div class='section-title d-flex justify-content-between align-items-baseline signup-form'>
+          <h5>Hottest Movies in TMDB</h5>
+          {% if request.user.is_superuser %}
+            <a href="{% url 'movies:create' %}" style='text-decoration: none; color: white; font-size: 20px;'>[Create Movie]</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class='container'>
+      <div class='row'>
+        {% for movie in posts %}
+          <div class="col-4">
+            <div class="lp-item">
+                <div class="lp-pic" style="background-image: url({{movie.poster_path}});"></div>
+                <div class="lp-text text-center">
+                    <h5><a href="{% url 'movies:detail' movie.pk %}" style='text-decoration: none; color: white; font-size: 20px;'>{{movie.title}}</a></h5>
+                    <span class='text-white'><i class="fa fa-comment-o"></i> {{movie.review_set.all|length}}</span>
+                    <span class='text-white'><i class="far fa-heart"></i> {{movie.like_users.all|length}}</span> 
+                </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class='d-flex justify-content-center m-3'>
+      <div>
+      {% if posts.has_previous %}
+        <a href="?page=1" style='text-decoration: none; color: white; font-weight: bold; font-size: 20px;'>맨 앞으로</a>
+        <a href="?page={{posts.previous_page_number}}" style='text-decoration: none; color: white; font-weight: bold; font-size: 20px;'> <i class="fas fa-angle-double-left"></i> </a>
+      {% endif %}
+      </div>
+
+      <div class='mx-3'>
+        <span style='text-decoration: none; color: white; font-weight: bold; font-size: 20px;'>{{posts.number}}</span>
+        <span style='text-decoration: none; color: white; font-weight: bold; font-size: 20px;'>/</span>
+        <span style='text-decoration: none; color: white; font-weight: bold; font-size: 20px;'>{{posts.paginator.num_pages}}</span>
+      </div>
+
+      <div>
+      {% if posts.has_next %}
+        <a href="?page={{posts.next_page_number}}" style='text-decoration: none; color: white; font-weight: bold; font-size: 20px;'> <i class="fas fa-angle-double-right"></i> </a>
+        <a href="?page={{posts.paginator.num_pages}}" style='text-decoration: none; color: white; font-weight: bold; font-size: 20px;'>맨 뒤로</a>
+      {% endif %}
+      </div>
+    </div>
+  
+  </div>
+</div>
+{% endblock content %}

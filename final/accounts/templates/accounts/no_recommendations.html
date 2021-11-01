@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class='container'>
+    <h1 style='color: white;'>비슷한 영화가 없네요</h1>
+    <h1 style='color: white;'>아래 링크로 가서 다른 영화에 좋아요를 눌러주세요</h1>
+    <a href="{% url 'movies:index' %}" style='text-decoration: none; color: white; font-size: 20px;'>[여기]</a>
+  </div>
+{% endblock content %}

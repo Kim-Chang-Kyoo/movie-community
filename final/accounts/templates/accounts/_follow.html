@@ -1,0 +1,62 @@
+<div class="jumbotron text-center text-white bg-dark">
+  <p class="lead mb-1">아이디</p>
+  <h1 class="display-4">{{ person.username }}</h1>
+  <hr>
+  {% with followings=person.followings.all followers=person.followers.all %}
+    {% comment %} ajax를 적용할 요소 {% endcomment %}
+    <p class="lead">
+      팔로잉 : {{ followings|length }} / 팔로워 : <span id='follow-count-{{person.pk}}'>{{ followers|length }}</span>
+    </p>
+
+    <!-- 팔로우 버튼 -->
+    {% if request.user != person %}
+      {% comment %} ajax를 적용할 요소 {% endcomment %}
+      <form class='follow-form' data-id="{{ person.pk }}">
+        {% csrf_token %}
+        {% if request.user in followers %}
+          <i class="far fa-thumbs-up"></i><button class='bg-dark' style='border: 0; color: white; font-weight: bold; font-size: 20px;' id="follow-{{person.pk}}"> Unfollow</button>
+        {% else %}
+          <i class="far fa-thumbs-up"></i><button id="follow-{{person.pk}}"> Follow</button>
+        {% endif %}
+      </form>
+    {% endif %}
+
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+      const form = document.querySelector('.follow-form')
+      const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value
+      
+      if (form) {  
+        form.addEventListener('submit', function (event) {
+          event.preventDefault()
+
+          const personId = event.target.dataset.id
+          axios.post(
+            `http://127.0.0.1:8000/accounts/follow/${personId}/`,
+            {},
+            {headers: {'X-CSRFToken': csrftoken}}
+          )
+            .then(response => {
+              const followed = response.data.followed
+              const count = response.data.count
+              
+              const followButton = document.querySelector(`#follow-${personId}`)
+              if (followed) {
+                followButton.innerText = 'Unfollow'
+              }else {
+                followButton.innerText = 'Follow'
+              }
+
+              const followCount = document.querySelector(`#follow-count-${personId}`)
+              followCount.innerText = count
+            })
+            .catch(error => {
+              alert('_follow.html axios error')
+              console.log(error)
+            })
+        })
+      }
+    </script>
+  {% endwith %}
+</div>

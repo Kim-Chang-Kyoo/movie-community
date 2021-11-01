@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class='signup-text'>
+  <div class='container'>
+    <div class='signup-title'>
+      <h2>update movie information</h2>
+    </div>
+
+    <form action="" method='POST' class='signup-form' enctype='multipart/form-data'>
+      {% csrf_token %}
+      <div class='sf-input-list'>
+        <img src="{{movie.poster_path}}" alt="poster_path">
+        {{form.as_p}}
+      </div>
+      <button type="submit"><span>EDIT</span></button>
+    </form>
+  </div>
+</div>
+{% endblock content %}

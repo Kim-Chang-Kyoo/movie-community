@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<section class="details-post-section">
+    <div class="details-text">    
+        <div class="dt-breadcrumb">
+            <h3 class='text-center'>Movie Title: {{ review.movie.title }}</h3>
+        </div>
+
+        <div class="dt-pic-item">
+            <div class="text-center">
+                <img src="{{review.movie.poster_path}}" alt="movie_poster_image">
+            </div>
+        </div>
+        
+        <div class="dt-listing text-center">
+            <div class=''>
+              <div class=''>
+                {% comment %} ajax를 적용할 요소 {% endcomment %}
+                <form class='like-form d-inline-block' data-id='{{ review.pk }}'>
+                  {% csrf_token %}
+                  {% if user in review.like_users.all %}
+                    <button class="btn" style="box-shadow: none;">
+                      <i id='like-{{ review.pk }}' class="fas fa-heart fa-lg" style="color:crimson;"></i>
+                    </button>
+                  {% else %}
+                    <button class="btn" style="box-shadow: none;">
+                      <i id='like-{{ review.pk }}' class="fas fa-heart fa-lg"></i>
+                    </button>
+                  {% endif %}
+                </form>
+
+                {% comment %} ajax를 적용할 요소 {% endcomment %}
+                <p class='d-inline-block'>
+                  <span id='like-count-{{review.pk}}'>{{ review.like_users.all|length }}</span> likes
+                </p>
+              </div>
+
+              <h3 class='d-inline-block'>{{review.title}}</h3>
+            </div>
+            
+            <p>{{ review.content }}</p>
+            <ul style='list-style: none;'>
+              <li>my scoring: {{ review.rank }} / 10</li>
+              <li>created at: {{ review.created_at }}</li>
+              <li>updated at: {{ review.updated_at }}</li>
+            </ul>
+        </div>
+
+        <div class='container d-flex justify-content-end align-items-center'>
+          {% if request.user == review.user %}
+            <a href="{% url 'community:update' review.pk %}" style='text-decoration: none; color: white; font-weight: bold; font-size: 20px;'>[수정]</a>
+    
+            <form action="{% url 'community:delete' review.pk %}" method='POST'>
+              {% csrf_token %}
+              <button style='background-color: black; border: 0; color: white; font-weight: bold; font-size: 20px;'>[삭제]</button>
+            </form>
+          {% endif %}
+        </div>
+
+    </div>
+    <hr class='text-light'>
+
+
+    <div class='container text-light'>
+      <h4 class='text-light'>댓글 목록</h4>
+      {% if comments|length %}
+        <p><b>{{ comments|length }}개의 댓글이 있습니다.</b></p>
+      {% endif %}
+
+      {% for comment in comments %}
+        <div>
+          <p class='d-inline-block'>{{ comment.user }} : {{ comment.content }}</p>
+          {% if comment.user == request.user %}
+            <form class='d-inline-block' action="{% url 'community:delete_comment' review.pk comment.pk %}" method='POST'>
+              {% csrf_token %}
+              <button style='background-color: black; border: 0; color: white; font-weight: bold; font-size: 15px;'>[삭제]</button>
+            </form>
+          {% endif %}
+        </div>
+      {% empty %}
+        <p><b>댓글이 없어요...</b></p>
+      {% endfor %}
+      <hr>
+      
+      {% if request.user.is_authenticated %}
+        <form action="{% url 'community:create_comment' review.pk %}" method="POST">
+          {% csrf_token %}
+          {{ comment_form }}
+          <button style='background-color: black; border: 0; color: white; font-weight: bold; font-size: 15px;'>[작성]</button>
+        </form>
+      {% else %}
+        <a href="{% url 'accounts:login' %}" style='text-decoration: none; color: white; font-weight: bold; font-size: 20px;'>[댓글을 작성하려면 로그인하세요]</a>
+      {% endif %}
+    </div>
+</section>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    const form = document.querySelector('.like-form')
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault()
+
+      const reviewId = event.target.dataset.id
+      axios.post(
+        `http://127.0.0.1:8000/community/${reviewId}/like/`, 
+        {}, 
+        {headers: {'X-CSRFToken': csrftoken}}
+      ) // 403에러:csrf토큰 없어서 서버가 거부
+        .then(function (response) {
+          const liked = response.data.liked
+          const count = response.data.count
+
+          const likeButton = document.querySelector(`#like-${reviewId}`)
+          if (liked) {
+            likeButton.style.color = 'crimson'
+          } else {
+            likeButton.style.color = 'black'
+          }
+          // likeButton.style.color = liked ? 'crimson' : 'black'
+          
+          const likeCount = document.querySelector(`#like-count-${reviewId}`)
+          likeCount.innerText = count
+        })
+          // 로그인 화면으로 이동안할때 이렇게 수정
+        .catch( (error) => {
+          if (error.response.status === 401) {
+            window.location.href = '/accounts/login/'
+          }
+        })
+    })
+  </script>
+{% endblock  %}
