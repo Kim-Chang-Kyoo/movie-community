@@ -1,7 +1,5 @@
 # Movie community
 
-`2021.05.20 ~ 2021.05.27` 
-
 `Do it! 장고+부트스트랩 파이썬 웹 개발의 정석`
 
 ![](README.assets/1.png)
